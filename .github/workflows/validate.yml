@@ -1,0 +1,89 @@
+name: Validate
+
+# THE GATE. It runs the same checks the plugin's author ran locally, and it runs them by resolving
+# `botmaker-cli`'s MAIN artifact — the library, with no picocli and no command line in it — and calling
+# com.botmaker.cli.registry.RegistryGate.
+#
+# That is the whole design: a submission that fails for a reason its author could not have seen coming is
+# the experience this gate exists to prevent, so the code cannot live here. What this workflow adds is the
+# two things only the registry knows — every other entry's claimed ids, and that index.json is generated.
+#
+# It is not a security review. A plugin runs arbitrary code inside Studio's process; every check asks
+# whether a plugin WORKS. See README.md.
+
+on:
+  pull_request:
+    paths:
+      - 'plugins/**'
+      - 'index.json'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The merge commit's parent, so `git diff` below is the pull request's own changes and not
+          # everything since the branch point.
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Written to a FILE, never into a later `run:` line. A pull request chooses its own filenames, so a
+      # path is attacker-controlled text: interpolating one into a shell command is a command injection, and
+      # a path containing a space would break the argument list even without malice. The gate reads the list
+      # itself, through its `@file` form.
+      - name: What this pull request changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p target
+          git diff --name-only "$BASE_SHA" HEAD > target/changed.txt
+          cat target/changed.txt
+
+      # Resolves the CLI as a LIBRARY. `dependency:build-classpath` on a throwaway pom rather than a
+      # checkout: the gate must run the published code, because that is the code the author's own
+      # `botmaker validate` also is.
+      - name: Resolve botmaker-cli
+        run: |
+          mkdir -p target
+          cat > target/gate-pom.xml <<'POM'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <project xmlns="http://maven.apache.org/POM/4.0.0">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>com.botmaker.registry</groupId>
+              <artifactId>gate</artifactId>
+              <version>0-SNAPSHOT</version>
+              <packaging>pom</packaging>
+              <repositories>
+                  <repository>
+                      <id>jitpack.io</id>
+                      <url>https://jitpack.io</url>
+                  </repository>
+              </repositories>
+              <dependencies>
+                  <dependency>
+                      <groupId>com.github.LiQiyeDev</groupId>
+                      <artifactId>botmaker-cli</artifactId>
+                      <version>${env.BOTMAKER_CLI_VERSION}</version>
+                  </dependency>
+              </dependencies>
+          </project>
+          POM
+          mvn -B -q -f target/gate-pom.xml dependency:build-classpath \
+              -DincludeScope=runtime -Dmdep.outputFile=target/gate-classpath.txt
+        env:
+          # Pinned rather than floating: the gate's verdict must not change under a submission that is
+          # already open. Bump it deliberately, in a pull request of its own, so a rule change is a commit
+          # in this repository too.
+          BOTMAKER_CLI_VERSION: main-SNAPSHOT
+
+      - name: Run the gate
+        run: |
+          java -cp "$(cat target/gate-classpath.txt)" \
+               com.botmaker.cli.registry.RegistryGate . @target/changed.txt

@@ -1,0 +1,40 @@
+name: Index
+
+# Regenerates index.json from plugins/*.json after a merge, and commits it if it changed.
+#
+# The index is DERIVED, and this job is the only thing that writes it — which is what lets validate.yml
+# refuse a pull request that edits it by hand. Studio reads it straight from raw.githubusercontent.com at a
+# path that must not move: an already-shipped Studio has that URL compiled into it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'plugins/**'
+      - 'tools/build-index.sh'
+  workflow_dispatch:
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Regenerate
+        run: tools/build-index.sh
+
+      # `git diff --quiet` rather than committing unconditionally: a no-op commit on every push would make
+      # the file's history say nothing about when the registry actually changed.
+      - name: Commit if it changed
+        run: |
+          if git diff --quiet -- index.json; then
+            echo "index.json is already up to date."
+            exit 0
+          fi
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.json
+          git commit -m "registry: regenerate index.json"
+          git push

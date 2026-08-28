@@ -1,0 +1,2 @@
+# Nothing here is built. `target/` is where the gate workflow puts its throwaway pom and classpath.
+target/
