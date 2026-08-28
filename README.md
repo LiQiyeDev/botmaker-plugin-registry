@@ -68,14 +68,18 @@ author could not have seen coming is exactly what the gate exists to prevent.
 |---|---|
 | `classpath` | the published coordinate resolves and every entry exists |
 | `loads` | `ServiceLoader` finds at least one `StudioPlugin` through the real loader |
-| `id` | the id is well formed and claimed by no other entry |
+| `id` | the id is well formed, and claimed by no other entry and by no plugin Studio itself ships |
 | `palette` | `catalog(pin).problems()` is empty and every entry names a real public member |
-| `value-types` | no `ValueType` id collides with one another entry already registers |
+| `value-types` | no `ValueType` id collides with one another entry — or the BotMaker SDK — already registers |
 | `editors` | `slotEditors()` builds and every predicate answers without throwing |
 | `pom-scopes` | `botmaker-studio-api` is `provided`; `botmaker-plugin-toolkit` is not |
 
 Two of those — `id` and `value-types` — can only be answered here, because only this repository knows what is
 already claimed. That is why a clean local run says so rather than promising the pull request will pass.
+"Already claimed" is two sets: every other entry in `plugins/`, and the plugins BotMaker itself ships (the
+SDK owns `com.botmaker.sdk` and seventeen value type ids, including the bare `TEXT`, `NUMBER` and the rest,
+which are the names every project ever written already holds). **Prefix your ids with something that is
+yours** and neither can bite you.
 
 A value type id is written into project files and can never be corrected afterwards, which is why the
 collision check is a refusal and not a warning.

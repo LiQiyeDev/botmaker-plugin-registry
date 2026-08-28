@@ -6,7 +6,8 @@ name: Validate
 #
 # That is the whole design: a submission that fails for a reason its author could not have seen coming is
 # the experience this gate exists to prevent, so the code cannot live here. What this workflow adds is the
-# two things only the registry knows — every other entry's claimed ids, and that index.json is generated.
+# three things only the registry knows — every other entry's claimed ids, the coordinates of the plugins the
+# host itself ships (BOTMAKER_BUNDLED_PLUGINS, below), and that index.json is generated.
 #
 # It is not a security review. A plugin runs arbitrary code inside Studio's process; every check asks
 # whether a plugin WORKS. See README.md.
@@ -84,6 +85,21 @@ jobs:
           BOTMAKER_CLI_VERSION: main-SNAPSHOT
 
       - name: Run the gate
+        env:
+          # The plugins the HOST ships, whose ids no submission may take. They have no entry file here, so
+          # without this line `com.botmaker.sdk` and the SDK's seventeen value type ids are unclaimed and a
+          # submission taking one passes the gate and then loses silently in ValueCatalog.merge.
+          #
+          # A coordinate rather than a list of ids: the gate resolves it and asks the plugin, so nothing here
+          # has to be kept in step with the SDK. Pinned for the same reason BOTMAKER_CLI_VERSION is.
+          #
+          # The toolkit is named too, and must be: the SDK declares it `optional`, so it is NOT transitive,
+          # and SdkPlugin extends its AbstractStudioPlugin. Resolving the SDK alone gives a classpath its own
+          # plugin cannot be constructed from. Both go on ONE classpath, which is what a host has (Studio
+          # carries the toolkit at runtime scope for exactly this reason).
+          BOTMAKER_BUNDLED_PLUGINS: >-
+            com.github.LiQiyeDev:botmaker-sdk:main-SNAPSHOT,
+            com.github.LiQiyeDev:botmaker-plugin-toolkit:main-SNAPSHOT
         run: |
           java -cp "$(cat target/gate-classpath.txt)" \
                com.botmaker.cli.registry.RegistryGate . @target/changed.txt

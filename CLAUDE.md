@@ -28,11 +28,22 @@ applies from this side too: **a rule added here is a rule the plugin's author ca
 that fails for a reason its author could not have seen coming is the experience the gate exists to prevent.
 A new check belongs in `PluginValidator`, as a `Check`.
 
-What this repository legitimately owns is the two facts only it holds — the ids every other entry claims, and
-that `index.json` is generated — and both are passed to the gate rather than reimplemented.
+What this repository legitimately owns is the three facts only it holds — the ids every other entry claims,
+**which host's bundled plugins these ids are reserved for**, and that `index.json` is generated — and all
+three are passed to the gate rather than reimplemented.
 
-**The CLI version is pinned** (`BOTMAKER_CLI_VERSION` in `validate.yml`), not floating. A verdict must not
-change under a pull request that is already open; bump it in a pull request of its own.
+**The bundled set is `BOTMAKER_BUNDLED_PLUGINS`, and it is coordinates, not ids.** A plugin the host itself
+ships has no entry file here, so nothing claimed `com.botmaker.sdk` or the SDK's seventeen value type ids
+until this existed. The gate resolves the coordinates and asks the plugins; a list of ids in this repository
+would be a second answer to a question the SDK already answers, and would drift the first time a type was
+added. **Both the SDK and the toolkit are named** because the SDK declares the toolkit `optional` — not
+transitive — and `SdkPlugin` extends the toolkit's `AbstractStudioPlugin`, so resolving the SDK alone yields
+a classpath its own plugin cannot be constructed from. The gate puts them on one classpath, which is what a
+host has.
+
+**The CLI version and the bundled coordinates are pinned** (`BOTMAKER_CLI_VERSION`,
+`BOTMAKER_BUNDLED_PLUGINS` in `validate.yml`), not floating. A verdict must not change under a pull request
+that is already open; bump either in a pull request of its own.
 
 ## Changed paths never reach a shell
 
