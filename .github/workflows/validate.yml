@@ -29,11 +29,15 @@ jobs:
           # everything since the branch point.
           fetch-depth: 0
 
-      - uses: actions/setup-java@v4
+      # No `cache: maven`. It keys the cache on **/pom.xml and fails the job outright when there is none —
+      # `No file in … matched to [**/pom.xml], make sure you have checked out the target repository` — and
+      # this is a data repository, which is the whole point of it. The pom the gate needs is written a step
+      # later, into target/, so there is nothing here to key on at this point either. Found on the first
+      # real pull request (#1, the SDK's own entry), where it failed before a single check had run.
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '25'
-          cache: maven
 
       # Written to a FILE, never into a later `run:` line. A pull request chooses its own filenames, so a
       # path is attacker-controlled text: interpolating one into a shell command is a command injection, and
