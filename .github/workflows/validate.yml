@@ -88,7 +88,7 @@ jobs:
           # JitPack overrides with the tag, so a branch build is not the artifact the author's own
           # `botmaker validate` runs. v0.0.11 is the first release that also distinguishes an empty bundled
           # set from a missing one — see BOTMAKER_BUNDLED_PLUGINS below.
-          BOTMAKER_CLI_VERSION: v0.0.11
+          BOTMAKER_CLI_VERSION: v0.0.12
 
       - name: Run the gate
         env:
