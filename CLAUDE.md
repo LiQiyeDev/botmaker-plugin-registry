@@ -32,18 +32,31 @@ What this repository legitimately owns is the three facts only it holds — the 
 **which host's bundled plugins these ids are reserved for**, and that `index.json` is generated — and all
 three are passed to the gate rather than reimplemented.
 
-**The bundled set is `BOTMAKER_BUNDLED_PLUGINS`, and it is coordinates, not ids.** A plugin the host itself
-ships has no entry file here, so nothing claimed `com.botmaker.sdk` or the SDK's seventeen value type ids
-until this existed. The gate resolves the coordinates and asks the plugins; a list of ids in this repository
-would be a second answer to a question the SDK already answers, and would drift the first time a type was
-added. **Both the SDK and the toolkit are named** because the SDK declares the toolkit `optional` — not
-transitive — and `SdkPlugin` extends the toolkit's `AbstractStudioPlugin`, so resolving the SDK alone yields
-a classpath its own plugin cannot be constructed from. The gate puts them on one classpath, which is what a
-host has.
+**The bundled set is `BOTMAKER_BUNDLED_PLUGINS`, and since 2026-09-05 it is empty.** That is the truthful
+value, not a check somebody switched off: `botmaker-studio` has bundled no plugin since 2026-09-02 — every
+plugin, the SDK included, is loaded off the open project's own resolved classpath. So no id is reserved
+outside this index, and `com.botmaker.sdk` is claimed exactly the way every other id is, by
+`plugins/com.botmaker.sdk.json` existing, which git enforces.
+
+**Empty and unset are different, and the gate tells them apart** (`botmaker-cli` v0.0.11 and newer). Unset
+warns — nobody said, so a host's own plugins' ids would go unreserved without anyone having decided that,
+which is the hole `Bundled` exists to close. Empty is silent. **Do not delete the line believing it means
+the same thing.**
+
+**If a host bundles a plugin again, name it as a coordinate, never as a list of ids.** The gate resolves the
+coordinate and asks the plugin; a list of ids in this repository would be a second answer to a question the
+plugin already answers, and would drift the first time a value type was added. Name every bundled coordinate
+in one comma-separated value: they go on **one** classpath, because a bundled plugin's own dependency may be
+`optional` and so not transitive, and a classpath missing it is one that plugin cannot be constructed from.
+(The worked example was the SDK's own toolkit dependency, `optional` until SDK v1.1.5.)
 
 **The CLI version and the bundled coordinates are pinned** (`BOTMAKER_CLI_VERSION`,
 `BOTMAKER_BUNDLED_PLUGINS` in `validate.yml`), not floating. A verdict must not change under a pull request
-that is already open; bump either in a pull request of its own.
+that is already open; bump either in a pull request of its own. `BOTMAKER_CLI_VERSION` is a **released tag**
+and not `main-SNAPSHOT`, which is what it said until 2026-09-05 and which never resolved: JitPack builds a
+tag on demand and serves the artifact under that tag, and this project's poms carry the cosmetic
+`0.0.0-SNAPSHOT` JitPack overrides — so a branch build is not the artifact the author's own
+`botmaker validate` runs, which is the one property this whole arrangement exists to guarantee.
 
 ## Changed paths never reach a shell
 

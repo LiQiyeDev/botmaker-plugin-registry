@@ -82,24 +82,34 @@ jobs:
           # Pinned rather than floating: the gate's verdict must not change under a submission that is
           # already open. Bump it deliberately, in a pull request of its own, so a rule change is a commit
           # in this repository too.
-          BOTMAKER_CLI_VERSION: main-SNAPSHOT
+          #
+          # A released tag rather than main-SNAPSHOT, which is what stood here and never resolved: JitPack
+          # builds a *tag* on demand, and this module's own poms carry the cosmetic 0.0.0-SNAPSHOT that
+          # JitPack overrides with the tag, so a branch build is not the artifact the author's own
+          # `botmaker validate` runs. v0.0.11 is the first release that also distinguishes an empty bundled
+          # set from a missing one — see BOTMAKER_BUNDLED_PLUGINS below.
+          BOTMAKER_CLI_VERSION: v0.0.11
 
       - name: Run the gate
         env:
-          # The plugins the HOST ships, whose ids no submission may take. They have no entry file here, so
-          # without this line `com.botmaker.sdk` and the SDK's seventeen value type ids are unclaimed and a
-          # submission taking one passes the gate and then loses silently in ValueCatalog.merge.
+          # The plugins the HOST ships, whose ids no submission may take. EMPTY, and that is a statement
+          # rather than a disabled check: botmaker-studio has bundled no plugin since 2026-09-02. Every
+          # plugin, the SDK included, is loaded off the open project's own resolved classpath. So there is
+          # no id reserved outside this index, and `com.botmaker.sdk` is claimed the way every other id is —
+          # by plugins/com.botmaker.sdk.json existing, which git itself enforces.
           #
-          # A coordinate rather than a list of ids: the gate resolves it and asks the plugin, so nothing here
-          # has to be kept in step with the SDK. Pinned for the same reason BOTMAKER_CLI_VERSION is.
+          # Empty and UNSET are different, and the gate tells them apart (botmaker-cli v0.0.11 and newer).
+          # Unset warns: nobody said, so a host's own plugins' ids would be unreserved without anyone having
+          # decided that. Empty is silent: this host bundles nothing, and says so. Do not delete the line to
+          # "mean the same thing" — it does not.
           #
-          # The toolkit is named too, and must be: the SDK declares it `optional`, so it is NOT transitive,
-          # and SdkPlugin extends its AbstractStudioPlugin. Resolving the SDK alone gives a classpath its own
-          # plugin cannot be constructed from. Both go on ONE classpath, which is what a host has (Studio
-          # carries the toolkit at runtime scope for exactly this reason).
-          BOTMAKER_BUNDLED_PLUGINS: >-
-            com.github.LiQiyeDev:botmaker-sdk:main-SNAPSHOT,
-            com.github.LiQiyeDev:botmaker-plugin-toolkit:main-SNAPSHOT
+          # If a host ever bundles a plugin again, name it here as a COORDINATE, not as a list of ids: the
+          # gate resolves it and asks the plugin, so nothing here has to be kept in step with somebody
+          # else's value types. Name every bundled coordinate in one comma-separated value — they go on ONE
+          # classpath, because a bundled plugin's own dependency may be `optional` and so not transitive,
+          # and a classpath missing it is one that plugin cannot be constructed from. Pin them, for the same
+          # reason BOTMAKER_CLI_VERSION is pinned.
+          BOTMAKER_BUNDLED_PLUGINS: ""
         run: |
           java -cp "$(cat target/gate-classpath.txt)" \
                com.botmaker.cli.registry.RegistryGate . @target/changed.txt
