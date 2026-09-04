@@ -80,8 +80,15 @@ jobs:
               </dependencies>
           </project>
           POM
+          # An ABSOLUTE outputFile. A relative one resolves against the pom's own basedir, which is
+          # target/ — so `-Dmdep.outputFile=target/gate-classpath.txt` wrote target/target/…, the mvn step
+          # passed (it is -q and it did what it was told), and the next step died with
+          # `cat: target/gate-classpath.txt: No such file or directory` followed by a ClassNotFoundException
+          # for the gate itself. Found on pull request #1.
           mvn -B -q -f target/gate-pom.xml dependency:build-classpath \
-              -DincludeScope=runtime -Dmdep.outputFile=target/gate-classpath.txt
+              -DincludeScope=runtime -Dmdep.outputFile="$GITHUB_WORKSPACE/target/gate-classpath.txt"
+          # The gate must not be reported as missing when what is missing is its classpath.
+          test -s target/gate-classpath.txt
         env:
           # Pinned rather than floating: the gate's verdict must not change under a submission that is
           # already open. Bump it deliberately, in a pull request of its own, so a rule change is a commit
