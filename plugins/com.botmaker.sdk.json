@@ -7,6 +7,6 @@
   "tags" : [ "sdk", "palette", "vision", "input", "official" ],
   "minContractVersion" : "v0.0.4",
   "valueTypeIds" : [ "TEXT", "YES_NO", "WHOLE_NUMBER", "DECIMAL_NUMBER", "CHARACTER", "COLOR", "DATE", "TIME_OF_DAY", "DURATION", "IMAGE_TEMPLATE", "PRECISION", "POINT", "RECT", "SIZE", "DIRECTION", "KEY", "MOUSE_BUTTON" ],
-  "verifiedVersion" : "v1.1.5",
+  "verifiedVersion" : "v1.1.6",
   "verifiedAt" : "2026-09-05"
 }
