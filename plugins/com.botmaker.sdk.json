@@ -7,6 +7,7 @@
   "tags" : [ "sdk", "palette", "vision", "input", "official" ],
   "minContractVersion" : "v0.0.4",
   "valueTypeIds" : [ "TEXT", "YES_NO", "WHOLE_NUMBER", "DECIMAL_NUMBER", "CHARACTER", "COLOR", "DATE", "TIME_OF_DAY", "DURATION", "IMAGE_TEMPLATE", "PRECISION", "POINT", "RECT", "SIZE", "DIRECTION", "KEY", "MOUSE_BUTTON" ],
+  "editorDependencies" : [ "io.javalin:javalin:6.7.0", "com.google.zxing:core:3.5.3" ],
   "verifiedVersion" : "v1.1.6",
   "verifiedAt" : "2026-09-05"
 }
