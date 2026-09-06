@@ -32,6 +32,10 @@
       "KEY",
       "MOUSE_BUTTON"
     ],
+    "editorDependencies": [
+      "io.javalin:javalin:6.7.0",
+      "com.google.zxing:core:3.5.3"
+    ],
     "verifiedVersion": "v1.1.6",
     "verifiedAt": "2026-09-05"
   }
