@@ -19,7 +19,7 @@ entry is composed from what the plugin already says about itself — its id, its
 ids it registers, the contract version its pom declares — because a human retyping those is a human putting a
 typo in the registry's primary key.
 
-Install the CLI from [botmaker-cli](https://github.com/LiQiyeDev/botmaker-cli).
+Install the CLI from [botmaker-cli](https://github.com/BotMakerDev/botmaker-cli).
 
 ## Layout
 

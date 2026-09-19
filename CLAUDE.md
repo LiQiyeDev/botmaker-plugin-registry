@@ -17,8 +17,9 @@ from a single-array layout that did not have them:
   type ids are *not* filenames, so those still need the scan — that is `Registry.claimedValueTypeIds`.
 
 `index.json` must stay at exactly its current path. Studio reads it from
-`raw.githubusercontent.com/LiQiyeDev/botmaker-plugin-registry/main/index.json`, and a shipped Studio has that
-URL compiled into it.
+`raw.githubusercontent.com/BotMakerDev/botmaker-plugin-registry/main/index.json`, and a shipped Studio has
+that URL compiled into it. A Studio built before the repository moved into the organization on 2026-09-18
+spells the owner `LiQiyeDev`; `GitHubConfig.registryIndexRawUrls()` tries both, newest first.
 
 ## The gate is not in this repository, and that is not an oversight
 
